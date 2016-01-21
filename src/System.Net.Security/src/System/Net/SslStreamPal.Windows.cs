@@ -301,12 +301,12 @@ namespace System.Net
             }
         }
 
-        private static SecurityStatusPal GetSecurityStatusPalFromWin32Int(int win32SecurityStatus)
+        internal static SecurityStatusPal GetSecurityStatusPalFromWin32Int(int win32SecurityStatus)
         {
             return GetSecurityStatusPalFromInterop((Interop.SecurityStatus)win32SecurityStatus);
         }
 
-        private static SecurityStatusPal GetSecurityStatusPalFromInterop(Interop.SecurityStatus win32SecurityStatus)
+        internal static SecurityStatusPal GetSecurityStatusPalFromInterop(Interop.SecurityStatus win32SecurityStatus)
         {
             switch (win32SecurityStatus)
             {
@@ -394,7 +394,7 @@ namespace System.Net
             }
         }
 
-        private static Interop.SecurityStatus GetInteropFromSecurityStatusPal(SecurityStatusPal status)
+        internal static Interop.SecurityStatus GetInteropFromSecurityStatusPal(SecurityStatusPal status)
         {
             switch (status)
             {
