@@ -149,7 +149,6 @@ namespace System.Net.Security
             {
                 package = NegotiationInfoClass.NTLM;
             }
-
             else if (protectionLevel == ProtectionLevel.EncryptAndSign)
             {
                 flags |= ContextFlagsPal.Confidentiality;
