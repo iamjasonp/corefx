@@ -285,7 +285,9 @@ namespace System.Net.Security
             catch(Exception ex)
             {
                 Debug.Write("Exception Caught. - " + ex);
-                base.ReleaseHandle();
+                Debug.Assert((null != credential), "Null credential in SafeDeleteContext");
+                credential.DangerousRelease();
+                credential = null;
                 throw;
             }
         }

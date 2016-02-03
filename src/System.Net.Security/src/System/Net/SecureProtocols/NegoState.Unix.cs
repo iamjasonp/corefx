@@ -25,26 +25,7 @@ namespace System.Net.Security
     internal partial class NegoState
     {
         private const int LogonDenied = unchecked((int)0x8009030C);
-        
-        private class NNSProtocolException : Exception
-        {
-            internal static readonly Exception Instance;
-
-            // MS-NNS Protocol requires a Windows error code to be  
-            // passed back. Hence, we always use NTE_FAIL  
-            private const int NTE_FAIL = unchecked((int)0x80090020);
-
-            static NNSProtocolException()
-            {
-                Instance = new NNSProtocolException();
-            }
-
-            private NNSProtocolException() : base()
-            {
-                HResult = NTE_FAIL;
-            }
-        }
-
+        private const int NTE_FAIL = unchecked((int)0x80090020);
 
         internal IIdentity GetIdentity()
         {
@@ -65,12 +46,6 @@ namespace System.Net.Security
         internal static string QueryContextAuthenticationPackage(SafeDeleteContext securityContext)
         {
             return NegotiationInfoClass.Kerberos;
-        }
-
-        internal static object QueryContextSizes(SafeDeleteContext securityContext)
-        {
-            // This return value is never used
-            return null;
         }
 
         internal static int QueryMaxTokenSize(string package)
@@ -130,7 +105,7 @@ namespace System.Net.Security
             // TODO (Issue #3718): The second buffer can contain a channel binding which is not supported 
             if ((null != inSecurityBufferArray) && (inSecurityBufferArray.Length > 1))
             {
-                throw new PlatformNotSupportedException("No support for channel binding on non-Windows");
+                throw new PlatformNotSupportedException(SR.net_nego_channel_binding_not_supported);
             }
 
             return EstablishSecurityContext(
@@ -175,7 +150,7 @@ namespace System.Net.Security
         private static void ThrowCredentialException(long error)
         {
             string message = SR.net_auth_alert;
-            if ((int)error == LogonDenied)
+            if (error == LogonDenied)
             {
                 message = SR.net_auth_bad_client_creds;
             }
@@ -195,7 +170,7 @@ namespace System.Net.Security
 
         internal static Exception CreateExceptionFromError(SecurityStatusPal statusCode)
         {
-            return NNSProtocolException.Instance;
+            return new Win32Exception(NTE_FAIL);
         }
 
         internal static int Encrypt(

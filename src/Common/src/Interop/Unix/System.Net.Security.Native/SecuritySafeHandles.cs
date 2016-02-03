@@ -20,7 +20,9 @@ namespace System.Net.Security
 
         public SafeFreeNegoCredentials(string username, string password, string domain) : base(IntPtr.Zero, true)
         {
+            bool ignore = false;
             _credential = SafeGssCredHandle.Create(username, password, domain);
+            _credential.DangerousAddRef(ref ignore);
         }
 
         public override bool IsInvalid
@@ -30,7 +32,7 @@ namespace System.Net.Security
 
         protected override bool ReleaseHandle()
         {
-            _credential.Dispose();
+            _credential.DangerousRelease();
             _credential = null;
             return true;
         }
@@ -60,7 +62,9 @@ namespace System.Net.Security
             }
             catch
             {
-                base.ReleaseHandle();
+                Debug.Assert((null != credential), "Null credential in SafeDeleteNegoContext");
+                credential.DangerousRelease();
+                credential = null;
                 throw;
             }
         }
@@ -80,8 +84,12 @@ namespace System.Net.Security
                     _context.Dispose();
                     _context = null;
                 }
-                _targetName.Dispose();
-                _targetName = null;
+
+                if (_targetName != null)
+                {
+                    _targetName.Dispose();
+                    _targetName = null;
+                }
             }
             base.Dispose(disposing);
         }
