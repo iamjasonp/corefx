@@ -185,8 +185,7 @@ namespace System.Net.Security
         {
             Debug.Assert(!isNtlm, "Encrypt: NTLM is not yet supported");
             SafeDeleteNegoContext gssContext = securityContext as SafeDeleteNegoContext;
-            byte[] tempOutput;
-            Interop.NetSecurity.Encrypt(gssContext.GssContext, isConfidential, buffer, offset, count, out tempOutput);
+            byte[] tempOutput = Interop.GssApi.Encrypt(gssContext.GssContext, isConfidential, buffer, offset, count);
 
             // Create space for prefixing with the length
             const int prefixLength = 4;
@@ -206,7 +205,7 @@ namespace System.Net.Security
             uint sequenceNumber)
         {
             newOffset = offset;
-            return Interop.NetSecurity.Decrypt(((SafeDeleteNegoContext)securityContext).GssContext, buffer, offset, count);
+            return Interop.GssApi.Decrypt(((SafeDeleteNegoContext)securityContext).GssContext, buffer, offset, count);
         }
 
         internal static int DecryptNtlm(
@@ -241,11 +240,11 @@ namespace System.Net.Security
             SafeDeleteNegoContext negoContext = (SafeDeleteNegoContext)context;
             try
             {
-                Interop.NetSecurity.GssFlags inputFlags = GetInteropGssFromContextFlagsPal(inFlags);
+                Interop.NetSecurityNative.GssFlags inputFlags = GetInteropGssFromContextFlagsPal(inFlags);
                 uint outputFlags;
                 SafeGssContextHandle contextHandle = negoContext.GssContext;
 
-                bool done = Interop.NetSecurity.EstablishSecurityContext(
+                bool done = Interop.GssApi.EstablishSecurityContext(
                                   ref contextHandle,
                                   credential.GssCredential,
                                   isNtlm,
@@ -259,7 +258,7 @@ namespace System.Net.Security
                 outputBuffer.size = outputBuffer.token.Length;
                 outputBuffer.offset = 0;
 
-                outFlags = GetContextFlagsPalFromInteropGss((Interop.NetSecurity.GssFlags)outputFlags);
+                outFlags = GetContextFlagsPalFromInteropGss((Interop.NetSecurityNative.GssFlags)outputFlags);
 
                 // Save the inner context handle for further calls to NetSecurity
                 if (null == negoContext.GssContext)
@@ -274,66 +273,66 @@ namespace System.Net.Security
             }
         }
 
-        private static ContextFlagsPal GetContextFlagsPalFromInteropGss(Interop.NetSecurity.GssFlags gssFlags)
+        private static ContextFlagsPal GetContextFlagsPalFromInteropGss(Interop.NetSecurityNative.GssFlags gssFlags)
         {
             ContextFlagsPal flags = ContextFlagsPal.Zero;
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_INTEG_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_INTEG_FLAG) != 0)
             {
                 flags |= (ContextFlagsPal.AcceptIntegrity | ContextFlagsPal.InitIntegrity);
             }
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_CONF_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_CONF_FLAG) != 0)
             {
                 flags |= ContextFlagsPal.Confidentiality;
             }
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_IDENTIFY_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_IDENTIFY_FLAG) != 0)
             {
                 flags |= ContextFlagsPal.InitIdentify;
             }
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_MUTUAL_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_MUTUAL_FLAG) != 0)
             {
                 flags |= ContextFlagsPal.MutualAuth;
             }
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_REPLAY_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_REPLAY_FLAG) != 0)
             {
                 flags |= ContextFlagsPal.ReplayDetect;
             }
-            if ((gssFlags & Interop.NetSecurity.GssFlags.GSS_C_SEQUENCE_FLAG) != 0)
+            if ((gssFlags & Interop.NetSecurityNative.GssFlags.GSS_C_SEQUENCE_FLAG) != 0)
             {
                 flags |= ContextFlagsPal.SequenceDetect;
             }
             return flags;
         }
 
-        private static Interop.NetSecurity.GssFlags GetInteropGssFromContextFlagsPal(ContextFlagsPal flags)
+        private static Interop.NetSecurityNative.GssFlags GetInteropGssFromContextFlagsPal(ContextFlagsPal flags)
         {
-            Interop.NetSecurity.GssFlags gssFlags = (Interop.NetSecurity.GssFlags)0;
+            Interop.NetSecurityNative.GssFlags gssFlags = (Interop.NetSecurityNative.GssFlags)0;
             if ((flags & ContextFlagsPal.AcceptIntegrity) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_INTEG_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_INTEG_FLAG;
             }
             if ((flags & ContextFlagsPal.Confidentiality) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_CONF_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_CONF_FLAG;
             }
             if ((flags & ContextFlagsPal.InitIdentify) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_IDENTIFY_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_IDENTIFY_FLAG;
             }
             if ((flags & ContextFlagsPal.InitIntegrity) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_INTEG_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_INTEG_FLAG;
             }
             if ((flags & ContextFlagsPal.MutualAuth) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_MUTUAL_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_MUTUAL_FLAG;
             }
             if ((flags & ContextFlagsPal.ReplayDetect) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_REPLAY_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_REPLAY_FLAG;
             }
             if ((flags & ContextFlagsPal.SequenceDetect) != 0)
             {
-                gssFlags |= Interop.NetSecurity.GssFlags.GSS_C_SEQUENCE_FLAG;
+                gssFlags |= Interop.NetSecurityNative.GssFlags.GSS_C_SEQUENCE_FLAG;
             }
             return gssFlags;
         }

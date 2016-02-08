@@ -58,7 +58,7 @@ namespace System.Net.Security
         {
             try
             {
-                _targetName = SafeGssNameHandle.Create(targetName, false);
+                _targetName = SafeGssNameHandle.CreatePrincipal(targetName);
             }
             catch
             {
