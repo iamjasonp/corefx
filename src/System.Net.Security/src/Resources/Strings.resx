@@ -432,7 +432,6 @@
   <data name="net_context_buffer_too_small" xml:space="preserve">
     <value>Insufficient buffer space. Required: {0} Actual: {1}.</value>
   </data>
-</root>
   <data name="net_nego_channel_binding_not_supported" xml:space="preserve">
     <value>No support for channel binding on non-Windows</value>
   </data>
